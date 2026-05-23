@@ -20,7 +20,7 @@ The stack uses Docker named volumes so service data is preserved across containe
 ```mermaid
 flowchart LR
   Client[OTLP client or app] -->|gRPC 4317 / HTTP 4318| OTel[OpenTelemetry Collector]
-  Prometheus -->|scrapes 9464| OTel
+  OTel -->|metrics via OTLP HTTP| Prometheus
   OTel -->|logs| Loki
   OTel -->|traces| Tempo
   Grafana --> Prometheus
@@ -35,7 +35,7 @@ Signal routing in this repo:
 
 - traces -> Tempo
 - logs -> Loki
-- metrics -> Prometheus scrape endpoint exposed by the collector on `9464`
+- metrics -> Prometheus OTLP HTTP ingestion endpoint
 
 ## Quick Start
 
@@ -118,7 +118,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 - [docker-compose.yml](./docker-compose.yml): service definitions, ports, environment, and dependencies
 - [config/otelcol.yml](./config/otelcol.yml): collector receivers, processors, exporters, and pipelines
-- [config/prometheus.yml](./config/prometheus.yml): Prometheus scrape targets
+- [config/prometheus.yml](./config/prometheus.yml): Prometheus OTLP ingestion and TSDB settings
 - [config/loki.yml](./config/loki.yml): Loki storage and API settings
 - [config/tempo.yml](./config/tempo.yml): Tempo receivers and local storage settings
 - [config/grafana/provisioning/datasources/datasources.yml](./config/grafana/provisioning/datasources/datasources.yml): Grafana datasource provisioning

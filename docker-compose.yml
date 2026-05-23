@@ -16,6 +16,12 @@ services:
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-admin-api
+      - --web.enable-otlp-receiver
+      - --enable-feature=promql-experimental-functions
     ports:
       - "9090:9090"
 
