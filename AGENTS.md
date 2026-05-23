@@ -31,6 +31,7 @@ Use this file for project-specific operating guidance. Read the config files dir
   - logs -> Loki via OTLP HTTP
   - metrics -> Prometheus by exposing a scrape target on `9464`
 - Prometheus scrapes only the collector endpoint defined in [config/prometheus.yml](./config/prometheus.yml).
+- Grafana stores its application data in the `postgres` service, not in the container filesystem.
 - Grafana is pre-provisioned with Prometheus, Loki, and Tempo datasources; datasource changes should usually be made in the provisioning YAML, not through the UI.
 
 ## Editing Guidance
@@ -38,6 +39,7 @@ Use this file for project-specific operating guidance. Read the config files dir
 - Keep service names stable unless you also update every dependent config reference. The current internal hostnames are shared across Compose and provisioning files.
 - When changing ports or endpoints, update both the publishing service and every consumer config that references it.
 - For stateful services that other containers depend on, prefer a real `healthcheck` plus `depends_on.condition: service_healthy` over startup ordering alone.
+- For `postgres:18+`, mount the named volume at `/var/lib/postgresql`, not `/var/lib/postgresql/data`.
 - Prefer editing mounted YAML files over adding container command-line flags unless the image already expects that pattern.
 - Keep this repo minimal. Avoid introducing extra services, scripts, or app code unless the task explicitly requires it.
 

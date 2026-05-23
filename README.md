@@ -4,6 +4,8 @@ Minimal local observability stack built with Docker Compose.
 
 It runs Grafana, OpenTelemetry Collector, Prometheus, Loki, Tempo, and PostgreSQL with pre-provisioned Grafana datasources so you can ingest OTLP telemetry and inspect metrics, logs, and traces locally.
 
+The stack uses Docker named volumes so service data is preserved across container restarts and regular `docker compose down` / `docker compose up` cycles.
+
 ## Services
 
 - Grafana for dashboards and exploration
@@ -53,17 +55,29 @@ Check status:
 docker compose ps
 ```
 
-Stop the stack:
+Stop the running containers:
+
+```sh
+docker compose stop
+```
+
+`docker compose stop` stops the containers without removing them.
+
+Remove containers and network:
 
 ```sh
 docker compose down
 ```
+
+`docker compose down` removes the containers and network, but keeps the named volumes and their data.
 
 Remove containers and volumes:
 
 ```sh
 docker compose down -v
 ```
+
+Use `docker compose down -v` when you want to delete the persisted data together with the containers.
 
 Recreate after changing Compose or config files:
 
@@ -113,6 +127,7 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 - Grafana waits for PostgreSQL health before starting.
 - Config files under `config/` are bind-mounted read-only into containers.
+- Prometheus, Loki, Tempo, PostgreSQL, and Grafana plugins use named Docker volumes so their data survives normal container recreation.
 - If you change service names, ports, or internal endpoints, update every config file that references them.
 - For `postgres:18+`, use the parent directory mount layout expected by the image when adding persistent storage.
 

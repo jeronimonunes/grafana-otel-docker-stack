@@ -15,6 +15,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     ports:
       - "9090:9090"
 
@@ -24,6 +25,7 @@ services:
     command: ["-config.file=/etc/loki/config.yml"]
     volumes:
       - ./config/loki.yml:/etc/loki/config.yml:ro
+      - loki_data:/loki
     ports:
       - "3100:3100"
 
@@ -33,6 +35,7 @@ services:
     command: ["-config.file=/etc/tempo/config.yml"]
     volumes:
       - ./config/tempo.yml:/etc/tempo/config.yml:ro
+      - tempo_data:/var/tempo
     ports:
       - "3200:3200"   # Tempo HTTP API (used by Grafana)
 
@@ -49,6 +52,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    volumes:
+      - postgres_data:/var/lib/postgresql
     ports:
       - "5432:5432"
 
@@ -64,6 +69,7 @@ services:
       GF_DATABASE_SSL_MODE: disable
     volumes:
       - ./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana_plugins:/var/lib/grafana/plugins
     ports:
       - "3000:3000"
     depends_on:
@@ -75,3 +81,10 @@ services:
         condition: service_started
       tempo:
         condition: service_started
+
+volumes:
+  prometheus_data:
+  loki_data:
+  tempo_data:
+  postgres_data:
+  grafana_plugins:
