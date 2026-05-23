@@ -2,7 +2,7 @@
 
 Minimal local observability stack built with Docker Compose.
 
-It runs Grafana, OpenTelemetry Collector, Prometheus, Loki, Tempo, and PostgreSQL with pre-provisioned Grafana datasources so you can ingest OTLP telemetry and inspect metrics, logs, and traces locally.
+It runs Grafana, OpenTelemetry Collector, Prometheus, Loki, Tempo, and PostgreSQL with pre-provisioned Grafana datasources so you can ingest OTLP and StatsD telemetry and inspect metrics, logs, and traces locally.
 
 The stack uses Docker named volumes so service data is preserved across container restarts and regular `docker compose down` / `docker compose up` cycles.
 
@@ -20,6 +20,7 @@ The stack uses Docker named volumes so service data is preserved across containe
 ```mermaid
 flowchart LR
   Client[OTLP client or app] -->|gRPC 4317 / HTTP 4318| OTel[OpenTelemetry Collector]
+  StatsD[StatsD client] -->|UDP 8125| OTel
   OTel -->|metrics via OTLP HTTP| Prometheus
   OTel -->|logs| Loki
   OTel -->|traces| Tempo
@@ -29,13 +30,13 @@ flowchart LR
   Grafana --> PostgreSQL
 ```
 
-The collector accepts OTLP over gRPC on port `4317` and OTLP over HTTP on port `4318`.
+The collector accepts OTLP over gRPC on port `4317`, OTLP over HTTP on port `4318`, and StatsD over UDP on port `8125`.
 
 Signal routing in this repo:
 
 - traces -> Tempo
 - logs -> Loki
-- metrics -> Prometheus OTLP HTTP ingestion endpoint
+- metrics from OTLP and StatsD -> Prometheus OTLP HTTP ingestion endpoint
 
 ## Quick Start
 
@@ -93,6 +94,7 @@ docker compose up -d --force-recreate
 - Tempo HTTP API: http://localhost:3200
 - OTLP gRPC ingest: localhost:4317
 - OTLP HTTP ingest: http://localhost:4318
+- StatsD ingest: localhost:8125/udp
 - Collector health check: http://localhost:13133
 - PostgreSQL: localhost:5432
 
@@ -102,10 +104,11 @@ Grafana datasources are provisioned automatically from [config/grafana/provision
 
 Point your application or SDK at the collector instead of sending data directly to Grafana backends.
 
-Typical OTLP endpoints:
+Typical telemetry endpoints:
 
 - gRPC: `http://localhost:4317`
 - HTTP: `http://localhost:4318`
+- StatsD: `localhost:8125/udp`
 
 Example environment variables for an app using OTLP:
 
@@ -113,6 +116,8 @@ Example environment variables for an app using OTLP:
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ```
+
+StatsD clients can send UDP metrics to `localhost:8125`.
 
 ## Configuration Layout
 

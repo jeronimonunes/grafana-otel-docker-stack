@@ -5,12 +5,16 @@ receivers:
         endpoint: 0.0.0.0:4318
       grpc:
         endpoint: 0.0.0.0:4317
+  statsd:
+    endpoint: 0.0.0.0:8125
+    aggregation_interval: 10s
 
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
 
 processors:
+  deltatocumulative:
   batch:
 
 exporters:
@@ -34,7 +38,11 @@ service:
       receivers: [ otlp ]
       processors: [ batch ]
       exporters: [ otlp/tempo ]
-    metrics:
+    metrics/otlp:
       receivers: [ otlp ]
       processors: [ batch ]
+      exporters: [ otlp_http/prometheus ]
+    metrics/statsd:
+      receivers: [ statsd ]
+      processors: [ deltatocumulative, batch ]
       exporters: [ otlp_http/prometheus ]

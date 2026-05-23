@@ -9,6 +9,7 @@ services:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
       - "13133:13133" # health check
+      - '8125:8125/udp' # StatsD
 
   prometheus:
     image: prom/prometheus:latest
